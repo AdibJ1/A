@@ -1,0 +1,57 @@
+import pexpect
+
+# Define Constants
+IP_ADDRESS = '192.168.56.101'
+USERNAME = 'prne'
+PASSWORD = 'cisco123!'
+ENABLE_PASSWORD = 'class123!'
+
+PROMPTS = {
+    'login': 'Password:',
+    'user_mode': '>',
+    'enable_mode': 'Password:',
+    'config_mode': r' . \(config\)#',
+    'after_hostname': r'R1\(config\)#'
+}
+
+def ssh_login(ip, username, password):
+    session = pexpect.spawn(f'ssh {username}@{ip}', encoding='utf-8', timeout=20)
+    return session
+
+def expect_prompt(session, prompt_name):
+    result = session.expect([PROMPTS[prompt_name], pexpect.TIMEOUT, pexpect.EOF])
+    if result != 0:
+        print(f'--- FAILURE! Expecting {prompt_name}')
+        session.close()
+        exit()
+
+def main():
+    session = ssh_login(IP_ADDRESS, USERNAME, PASSWORD)
+    
+    expect_prompt(session, 'login')
+    session.sendline(PASSWORD)
+    expect_prompt(session, 'user_mode')
+
+    session.sendline('enable')
+    expect_prompt(session, 'enable_mode')
+    session.sendline(ENABLE_PASSWORD)
+    expect_prompt(session, 'after_hostname')
+
+    session.sendline('configure terminal')
+    expect_prompt(session, 'config_mode')
+
+    session.sendline('hostname R1')
+    expect_prompt(session, 'after_hostname')
+
+    session.sendline('exit')  # Exit config mode
+    session.sendline('exit')  # Exit enable mode
+
+    print('------------------------------------------')
+    print(f'--- Success! connected to: {IP_ADDRESS}')
+    print(f'--- Success! with user: {USERNAME}')
+    print('------------------------------------------')
+
+    session.close()
+
+if __name__ == "__main__":
+    main()
