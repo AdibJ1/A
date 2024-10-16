@@ -25,28 +25,6 @@ if result != 0:
     print('--- FAILURE! entering passsword: ',password)
     exit()
 
-session.sendline('configure terminal')
-result = session.expect([r' . \(config\)#',pexpect.TIMEOUT,pexpect.EOF])
-
-# check for error , if exists then display error and exit
-if result != 0:
-    print('--- FAILURE! entering config mode')
-    exit()
-
-# change the hostname to R1
-session.sendline('hostname R1')
-result = session.expect([r'R1\(config\)#',pexpect.TIMEOUT,pexpect.EOF])
-
-# check for error , if exists then display error and exit
-if result != 0:
-    print('--- FAILURE! setting hostname')
-    exit()
-
-#Exit config mode 
-session.sendline('exit')
-
-#Exit enable mode
-session.sendline('exit')
 
 print('--------------------------------------------')
 print('')
