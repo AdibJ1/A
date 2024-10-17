@@ -40,12 +40,16 @@ session.sendline('hostname R1')
 result = session.expect([r'R1\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
 if result != 0:
     print('--- FAILURE! setting hostname')
-
+    
 session.sendline('exit')
 session.sendline('exit')
 
 print('---------------------------------------')
 print('')
-print('---- Success connecting to ip_address')
+print('-- Success connecting to:  ', ip_address)
+print('---             Username:  ', username)
+print('---             Password:  ', password)
+print('--')
+print('---------------------------------------')
 
 session.close()
