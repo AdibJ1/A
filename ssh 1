@@ -1,0 +1,54 @@
+import pexpect
+
+# Define Variables
+ip_address = '192.168.56.101'
+username = 'prne'
+password = 'cisco123!'
+password_enable = 'class123!'
+
+def expect_prompt(session, prompt_list, timeout=20):
+    result = session.expect(prompt_list, timeout=timeout)
+    # Check for error
+    if result != 0:
+        print(f'--- FAILURE! Expected prompt not found: {prompt_list[result]}')  # **Error**
+        session.close()
+        exit()
+
+# Create the SSH session
+session = pexpect.spawn(f'ssh {username}@{ip_address}', encoding='utf-8', timeout=20)
+expect_prompt(session, ['Password:', pexpect.TIMEOUT, pexpect.EOF])
+
+# Send password
+session.sendline(password)
+expect_prompt(session, ['>', pexpect.TIMEOUT, pexpect.EOF])
+
+# Enter enable mode
+session.sendline('enable')
+expect_prompt(session, ['Password:', pexpect.TIMEOUT, pexpect.EOF])  # **Error**
+
+# Send enable password
+session.sendline(password_enable)
+expect_prompt(session, ['#', pexpect.TIMEOUT, pexpect.EOF])  # **Error**
+
+# Enter configuration mode
+session.sendline('configure terminal')
+expect_prompt(session, [r' . \(config\)#', pexpect.TIMEOUT, pexpect.EOF])  # **Error**
+
+# Change the hostname to R1
+session.sendline('hostname R1')
+expect_prompt(session, [r'R1\(config\)#', pexpect.TIMEOUT, pexpect.EOF])  # **Error**
+
+# Exit config mode
+session.sendline('exit')
+
+# Exit enable mode
+session.sendline('exit')
+
+# Display a success message if it works
+print('------------------------------------------')
+print(f'--- Success! connected to: {ip_address}')
+print(f'--- Success! using username: {username}')
+print('------------------------------------------')
+
+# Terminate SSH session 
+session.close()
