@@ -33,7 +33,7 @@ if result != 0:
 session.sendline('configure terminal')
 result = session.expect([r'.\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
 if result != 0:
-    print('--- FAILURE! em=ntering config mode')
+    print('--- FAILURE! entering config mode')
     exit()
 
 session.sendline('hostname R1')
@@ -46,7 +46,7 @@ session.sendline('exit')
 session.sendline('configure terminal')
 result = session.expect([r'.\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
 if result != 0:
-    print('--- FAILURE! em=ntering config mode')
+    print('--- FAILURE! entering config mode')
     exit()
 
 session.sendline('copy running-config startup-config')
