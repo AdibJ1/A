@@ -51,7 +51,7 @@ if result != 0:
 
 session.sendline('copy running-config startup-config')
 session.sendline('enter')
-result = session.expect([r'Confirm', r'#', pexpect.TIMEOUT, pexpect.EOF])
+result = session.expect([r'R1\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
 if result != 0:
     print('--- FAILURE! saving configuration')
 else:
