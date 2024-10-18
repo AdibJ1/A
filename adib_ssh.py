@@ -56,6 +56,8 @@ if result != 0:
     print('--- FAILURE! saving configuration')
 else:
     print('---SUCCESS saving configuration')
+    
+session.sendline('exit')
 session.sendline('exit')
 
 print('---------------------------------------')
