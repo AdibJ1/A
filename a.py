@@ -42,6 +42,20 @@ if result != 0:
     print('--- FAILURE! setting hostname')
     
 session.sendline('exit')
+
+session.sendline('configure terminal')
+result = session.expect([r'.\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
+if result != 0:
+    print('--- FAILURE! em=ntering config mode')
+    exit()
+
+session.sendline('copy running-config startup-config')
+session.sendline('enter')
+result = session.expect([r'R1\(config\)#', pexpect.TIMEOUT, pexpect.EOF]) 
+if result != 0:
+    print('--- FAILURE! saving configuration')
+else:
+    print('---SUCCESS saving configuration)
 session.sendline('exit')
 
 print('---------------------------------------')
