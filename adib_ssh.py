@@ -7,11 +7,11 @@ password = 'cisco123!'
 password_enable = 'class123!'
 
 hardening_checklist = {
-    'SSH enabled': 'ip ssh version 2',
-    'Telnet disabled': 'no service telnet',
-    'Password encryption': 'service password-encryption',
-    'Logging enabled': 'logging buffered',
-    'NTP configured': 'ntp server',
+    'SSH enabled': r'ip ssh version 2',
+    'Telnet disabled': r'no service telnet',
+    'Password encryption': r'service password-encryption',
+    'Logging enabled': r'logging buffered',
+    'NTP configured': r'ntp server',
 }
 
 def check_hardening(show_running_config):
@@ -40,7 +40,7 @@ if result != 0:
     print('--- FAILURE! entering enable mode')
     exit()
 
-session.sendline(password_enable),
+session.sendline(password_enable)
 result = session.expect(['#', pexpect.TIMEOUT, pexpect.EOF])
 if result != 0:
     print('--- FAILURE! entering enable mode after sending password')
