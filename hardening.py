@@ -18,7 +18,8 @@ hardening_checklist = {
 # Function to check the running config against the hardening checklist
 def check_hardening(show_running_config):
     for check, rule in hardening_checklist.items():
-        # Search for the pattern in the running config
+        # Debugging: Print the rule and the result of the search
+        print(f"Checking rule: {check}")
         if re.search(rule, show_running_config, re.IGNORECASE):  # Perform case-insensitive search
             print(f'[SUCCESSFUL] {check}')
         else:
@@ -80,6 +81,11 @@ if result != 0:
 
 # Capture the running config output
 show_running_config = session.before.decode('utf-8')  # Decode the byte string to a normal string
+
+# Debugging: Print the raw running config to verify it
+print("\n=== Raw Running Config ===")
+print(show_running_config)
+print("\n===========================")
 
 # Check hardening against the running config using regex patterns
 check_hardening(show_running_config)
