@@ -6,6 +6,8 @@ username = 'prne'
 password = 'cisco123!'
 password_enable = 'class123!'
 
+syslog_server_ip = '192.168.56.101'
+
 hardening_checklist = {
     'SSH enabled': r'ip ssh version 2',
     'Telnet disabled': r'no service telnet',
@@ -57,7 +59,21 @@ result = session.expect([r'R1\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
 if result != 0:
     print('--- FAILURE! setting hostname')
     
+session.sendline(f'logging{syslog_server_ip}')
+result = session.expect([r'R1\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
+if result != 0:
+    print('--- FAILURE! setting the syslog server')
+    exit()
+
+session.sendline('logging trap informational')
+result = session.expect([r'R1\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
+if result != 0:
+    print('--- FAILURE! setting the syslog level')
+    exit()
+
+
 session.sendline('exit')
+
 
 session.sendline('show running-config')
 result = session.expect([r'#', pexpect.TIMEOUT,pexpect.EOF])
@@ -71,9 +87,7 @@ print('----------------------------')
 check_hardening(show_running_config)
 
 
-    
-session.sendline('exit')
-session.sendline('exit')
+
 
 print('---------------------------------------')
 print('')
