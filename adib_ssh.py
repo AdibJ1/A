@@ -14,12 +14,12 @@ hardening_checklist = {
     'NTP configured': 'ntp server',
 }
 
-def check_hardening(running_config):
+def check_hardening(show_running_config):
     for check, rule in hardening_checklist.items():
-    if rule in running_config:
-        print(f'[SUCCESSFUL] {check}')
-    else:
-        print(f'[FAILURE] {check}')
+        if rule in running_config:
+            print(f'[SUCCESSFUL] {check}')
+        else:
+            print(f'[FAILURE] {check}')
 
 session = pexpect.spawn('ssh ' + username + '@' + ip_address, encoding='utf-8', timeout=20)
 result = session.expect(['Password:', pexpect.TIMEOUT, pexpect.EOF])
@@ -64,7 +64,9 @@ result = session.expect([r'#', pexpect.TIMEOUT,pexpect.EOF])
 if result != 0:
     print('--- FAILURE! showing running config')
     exit()
-check_hardening(running-config)
+show_running_config = session.before.decode('utf-8')
+check_hardening(show_running_config)
+
 
 session.sendline('configure terminal')
 result = session.expect([r'.\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
