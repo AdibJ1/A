@@ -1,0 +1,136 @@
+import pexpect
+import re
+
+# Device details
+ip_address = '192.168.56.101'
+username = 'prne'
+password = 'cisco123!'
+password_enable = 'class123!'
+
+# Define ACL rules (you can modify these as needed)
+acl_rules = [
+    {'action': 'deny', 'ip': '192.168.1.100', 'mask': '0.0.0.0', 'protocol': 'ip', 'description': 'Deny host 192.168.1.100'},
+    {'action': 'permit', 'ip': '192.168.1.0', 'mask': '0.0.0.255', 'protocol': 'ip', 'description': 'Permit subnet 192.168.1.0/24'},
+    {'action': 'permit', 'ip': 'any', 'mask': 'any', 'protocol': 'ip', 'description': 'Allow all other traffic'}
+]
+
+# Define ACL number and interface
+acl_number = 101  # Extended ACL number
+interface = 'gigabitEthernet 0/1'  # Interface to apply ACL to (modify as needed)
+direction = 'in'  # Direction of ACL ('in' or 'out')
+
+# Function to apply ACL configuration to the device
+def apply_acl(session, acl_number, acl_rules, interface, direction):
+    print(f"--- Configuring ACL {acl_number} with rules:")
+    for rule in acl_rules:
+        action = rule['action']
+        ip = rule['ip']
+        mask = rule['mask']
+        protocol = rule['protocol']
+        description = rule['description']
+        # Apply each rule to the ACL
+        acl_command = f"access-list {acl_number} {action} {protocol} {ip} {mask}"
+        session.sendline(acl_command)
+        result = session.expect([r'.\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
+        if result != 0:
+            print(f'--- FAILURE! Could not apply rule: {description}')
+            return False
+        print(f'--- SUCCESS! Applied rule: {description}')
+    
+    # Apply the ACL to the interface
+    interface_command = f"interface {interface}\nip access-group {acl_number} {direction}"
+    session.sendline(interface_command)
+    result = session.expect([r'.\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
+    if result != 0:
+        print(f'--- FAILURE! Could not apply ACL to interface {interface} {direction}')
+        return False
+    print(f'--- SUCCESS! Applied ACL to interface {interface} {direction}')
+    return True
+
+# Function to check if the ACL is already applied to the interface
+def check_acl_on_interface(session, acl_number, interface):
+    session.sendline(f"show running-config interface {interface}")
+    result = session.expect([r'#', pexpect.TIMEOUT, pexpect.EOF])
+    if result != 0:
+        print(f'--- FAILURE! Could not show running config for interface {interface}')
+        return False
+    
+    config_output = session.before.decode('utf-8')
+    if f"ip access-group {acl_number}" in config_output:
+        print(f'--- SUCCESS! ACL {acl_number} is already applied to interface {interface}')
+        return True
+    else:
+        print(f'--- FAILURE! ACL {acl_number} is NOT applied to interface {interface}')
+        return False
+
+# Connect to the device via SSH
+session = pexpect.spawn(f'ssh {username}@{ip_address}', encoding='utf-8', timeout=20)
+result = session.expect(['Password:', pexpect.TIMEOUT, pexpect.EOF])
+
+if result != 0:
+    print(f'--- FAILURE! creating session for: {ip_address}')
+    exit()
+
+session.sendline(password)
+result = session.expect(['>', pexpect.TIMEOUT, pexpect.EOF])
+
+if result != 0:
+    print(f'--- FAILURE! entering password: {password}')
+    exit()
+
+# Enter enable mode
+session.sendline('enable')
+result = session.expect(['Password:', pexpect.TIMEOUT, pexpect.EOF])
+
+if result != 0:
+    print('--- FAILURE! entering enable mode')
+    exit()
+
+session.sendline(password_enable)
+result = session.expect(['#', pexpect.TIMEOUT, pexpect.EOF])
+
+if result != 0:
+    print('--- FAILURE! entering enable mode after sending password')
+    exit()
+
+# Enter configuration mode
+session.sendline('configure terminal')
+result = session.expect([r'.\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
+
+if result != 0:
+    print('--- FAILURE! entering config mode')
+    exit()
+
+# Check if ACL is already applied on the interface
+if not check_acl_on_interface(session, acl_number, interface):
+    # Apply ACL to the device
+    if apply_acl(session, acl_number, acl_rules, interface, direction):
+        print('--- SUCCESS! ACL configuration completed and applied successfully.')
+    else:
+        print('--- FAILURE! ACL configuration failed.')
+else:
+    print('--- ACL configuration is already applied. No changes made.')
+
+# Save the configuration
+session.sendline('copy running-config startup-config')
+session.sendline('enter')
+result = session.expect([r'R1\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
+
+if result != 0:
+    print('--- FAILURE! saving configuration')
+else:
+    print('--- SUCCESS saving configuration')
+
+# Exit from configuration mode and close session
+session.sendline('exit')
+session.sendline('exit')
+
+print('---------------------------------------')
+print('')
+print(f'-- Success connecting to: {ip_address}')
+print(f'--- Username: {username}')
+print(f'--- Password: {password}')
+print('---------------------------------------')
+
+# Close the SSH session
+session.close()
