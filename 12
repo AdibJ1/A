@@ -121,7 +121,7 @@ if result != 0:
 # Capture and print the OSPF configuration output
 ospf_config = session.before  # `before` contains the output before the prompt
 print("---- OSPF Configuration Output ----")
-print(ospf_config)
+print(str(ospf_config))
 
 # Show running-config to check hardening
 session.sendline('show running-config')
