@@ -72,7 +72,7 @@ if result != 0:
     print('--- FAILURE! entering loopback interface config mode')
     exit()
 
-session.sendline('ip address 192.168.56.103 255.255.255.0')  # Assign IP address to loopback
+session.sendline('ip address 10.10.10.13 255.255.255.0')  # Assign IP address to loopback
 result = session.expect([r'R1\(config-if\)#', pexpect.TIMEOUT, pexpect.EOF])
 if result != 0:
     print('--- FAILURE! assigning IP to loopback interface')
@@ -95,14 +95,13 @@ if result != 0:
     exit()
 
 # Set OSPF router ID (we use the loopback address here for simplicity)
-session.sendline('router-id 192.156.56.103')  # Set router ID (you can choose another ID)
+session.sendline('router-id 10.10.10.13')  # Set router ID (you can choose another ID)
 result = session.expect([r'R1\(config-router\)#', pexpect.TIMEOUT, pexpect.EOF])
 if result != 0:
     print('--- FAILURE! setting OSPF router ID')
     exit()
 
-# Advertise the loopback network in OSPF (192.168.1.0/24 network)
-session.sendline('network 192.168.56.103 0.0.0.255 area 0')  # Advertise the loopback network
+session.sendline('network 10.10.10.13 0.0.0.255 area 0')  # Advertise the loopback network
 result = session.expect([r'R1\(config-router\)#', pexpect.TIMEOUT, pexpect.EOF])
 if result != 0:
     print('--- FAILURE! advertising network in OSPF')
